@@ -68,7 +68,12 @@ class Pol private (private val terms: List[Term]) {
 	
 	def - (that: Pol): Pol = this + (-that)   
 	
-//  def * (that: Pol): Pol
+  	def * (that: Pol): Pol = {       
+		val termsMultiplied = for(t1 <- this.terms;	t2 <- that.terms)
+			yield new Pol(List(Term(t1.coef * t2.coef, t1.exp + t2.exp)))                                                        
+		termsMultiplied.foldRight(new Pol(Nil))(_+_)
+	}
+	
 //  def / (that: Pol): Tuple2[Pol, Pol]
 //
 //  // operadores unarios	
@@ -85,13 +90,16 @@ class Pol private (private val terms: List[Term]) {
 //  def / (d: Double): Pol
 //
 //  // grau, potenciacao e derivacao
-//  def degree: Int
+  	def degree: Int = if(terms.isEmpty) 0 else terms.head.exp
+
 //  def ^(n: Int): Pol
 //  def deriv: Pol
 //  def ! : Pol
 //
 //  // calcula o valor do polinomio alvo para um dado valor de x
-//  def apply(x: Double): Double
+ 	def apply(x: Double): Double = terms.foldRight(0.0){
+		(term, acc) => acc + (term.coef * (Math.pow(x,term.exp)))
+	}
 //
 //  // composicao do polinomio alvo com outro polinomio
 //  def apply(that: Pol): Pol
@@ -278,7 +286,7 @@ class PolSpec extends Spec with ShouldMatchers {
 			}
 		} 
 		
-		describe ("(when multiplying)"){
+		describe ("(when multiplying a Double)"){
 			it ("should know how to multiply an only term Pol by a number") {
 				val polA = Pol(1,1)
 				(polA * 2).toString should equal ("2x")
@@ -308,7 +316,50 @@ class PolSpec extends Spec with ShouldMatchers {
 				val polB = Pol(1,5) + Pol(2,4) + Pol(1,2) + Pol(-1,1)            				
 				(polA - polB).toString should equal ("x^5 - x^4 + x^3 - x^2 + x")
 			}               
-		}
+		}     
+		
+		describe ("(when asking for degree)"){
+			it ("should be 2 for x^2") {
+				val polA = Pol(1,2)
+				(polA.degree) should equal (2)
+			}
+			      
+			it ("should be 0 for an empty Pol") {
+				val polA = Pol(1,1) - Pol(1,1)
+				(polA.degree) should equal (0)
+			}			         
+		}    
+		
+		describe ("(when applying value into Pol)"){
+			it ("should be 4 for x = 2 in x^2") {
+				val polA = Pol(1,2)
+				(polA(2)) should equal (4)
+			}  	         
+		} 
+
+		describe ("(when multiplying a Pol)"){
+			it ("should know how to multiply two one term Pols") {
+				val polA = Pol(2,1)
+				val polB = Pol(3,1)
+				(polA * polB).toString should equal ("6x^2")
+			}
+			    
+			it ("should know how to multiply an one term Pol by a two term Pol") {
+				val polA = Pol(2,1)
+				val polB = Pol(3,1) + Pol(2,2)
+				(polA * polB).toString should equal ("4x^3 + 6x^2")
+			}
+			 
+	  		it ("should know how to multiply two two terms Pol") {
+				val polA = Pol(1,1) + Pol(2,0)
+				val polB = Pol(-1,1) + Pol(2,0)
+				(polA * polB).toString should equal ("-x^2 + 4")
+			}  	
+		}    
+		 
+		describe ("(when solving an exponentiation)"){  
+
+		}   		
 	}
 }
 
