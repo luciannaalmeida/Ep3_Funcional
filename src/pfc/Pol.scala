@@ -84,15 +84,19 @@ class Pol private (private val terms: List[Term]) {
 //  // aritmetica mista (o operando 1 e' um polinomio, o operando 2 e' um numero)
 //  def + (d: Double): Pol
 //  def - (d: Double): Pol
-  	def * (d: Double): Pol = {    
+	def * (d: Double): Pol = {    
 		new Pol(this.terms.map(term => Term(term.coef * d, term.exp)))
 	}
 //  def / (d: Double): Pol
 //
 //  // grau, potenciacao e derivacao
-  	def degree: Int = if(terms.isEmpty) 0 else terms.head.exp
+	def degree: Int = if(terms.isEmpty) 0 else terms.head.exp
 
-//  def ^(n: Int): Pol
+	def ^(n: Int): Pol = {
+		var result = Pol(1,0)
+		for(i <- 1 to n) result *= this
+		result
+	}
 //  def deriv: Pol
 //  def ! : Pol
 //
@@ -358,7 +362,15 @@ class PolSpec extends Spec with ShouldMatchers {
 		}    
 		 
 		describe ("(when solving an exponentiation)"){  
-
+			it ("should be x for (x)^1") {
+				val polA = Pol(1,1)
+				(polA ^ 1).toString should equal ("x")
+			}
+			
+			it ("should be x^2 - 4x + 4 for (x - 2)^2") {
+				val polA = Pol(1,1) - Pol(2,0)
+				(polA ^ 2).toString should equal ("x^2 - 4x + 4")
+			}
 		}   		
 	}
 }
